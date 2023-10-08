@@ -111,23 +111,14 @@ void Arduino_ESP32_OTA::write_byte_to_flash(uint8_t data)
 int Arduino_ESP32_OTA::download(const char * ota_url)
 {
   URI url(ota_url);
-  int port = 0;
+  int port = 36841;
 
-  if (url.protocol_ == "http") {
     _client = new WiFiClient();
-    port = 80;
-  } else if (url.protocol_ == "https") {
-    _client = new WiFiClientSecure();
-    static_cast<WiFiClientSecure*>(_client)->setCACert(_ca_cert);
-    port = 443;
-  } else {
-    DEBUG_ERROR("%s: Failed to parse OTA URL %s", __FUNCTION__, ota_url);
-    return static_cast<int>(Error::UrlParseError);
-  }
+ 
 
-  if (!_client->connect(url.host_.c_str(), port))
+  if (!_client->connect(ota_url, port))
   {
-    DEBUG_ERROR("%s: Connection failure with OTA storage server %s", __FUNCTION__, url.host_.c_str());
+    DEBUG_ERROR("%s: Connection failure with OTA storage server %s", __FUNCTION__, ota_url);
     return static_cast<int>(Error::ServerConnectError);
   }
 
