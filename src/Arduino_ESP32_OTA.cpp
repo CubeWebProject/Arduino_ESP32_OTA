@@ -21,7 +21,6 @@
 
 #include <Update.h>
 #include "Arduino_ESP32_OTA.h"
-#include "tls/amazon_root_ca.h"
 #include "decompress/lzss.h"
 #include "decompress/utility.h"
 #include "esp_ota_ops.h"
@@ -55,7 +54,6 @@ Arduino_ESP32_OTA::Arduino_ESP32_OTA()
 ,_ota_header{0}
 ,_ota_size(0)
 ,_crc32(0)
-,_ca_cert{amazon_root_ca}
 {
 
 }
@@ -78,12 +76,6 @@ Arduino_ESP32_OTA::Error Arduino_ESP32_OTA::begin()
   return Error::None;
 }
 
-void Arduino_ESP32_OTA::setCACert (const char *rootCA)
-{
-  if(rootCA != nullptr) {
-    _ca_cert = rootCA;
-  }
-}
 
 uint8_t Arduino_ESP32_OTA::read_byte_from_network()
 {
@@ -108,24 +100,15 @@ void Arduino_ESP32_OTA::write_byte_to_flash(uint8_t data)
   Update.write(&data, 1);
 }
 
-int Arduino_ESP32_OTA::download(const char * ota_url)
+int Arduino_ESP32_OTA::download(WiFiClient* client)
 {
-  URI url(ota_url);
-  int port = 36841;
 
-    _client = new WiFiClient();
+    _client = client;
  
 
-  if (!_client->connect(ota_url, port))
-  {
-    DEBUG_ERROR("%s: Connection failure with OTA storage server %s", __FUNCTION__, ota_url);
-    return static_cast<int>(Error::ServerConnectError);
-  }
+  
 
-  _client->println(String("GET ") + url.path_.c_str() + " HTTP/1.1");
-  _client->println(String("Host: ") + url.host_.c_str());
-  _client->println("Connection: close");
-  _client->println();
+  _client->println("ota");
 
   /* Receive HTTP header. */
   String http_header;

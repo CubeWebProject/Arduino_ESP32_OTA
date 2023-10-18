@@ -79,8 +79,7 @@ public:
   virtual ~Arduino_ESP32_OTA() { }
 
   Arduino_ESP32_OTA::Error begin();
-  void setCACert (const char *rootCA);
-  int download(const char * ota_url);
+  int download(WiFiClient* client);
   uint8_t read_byte_from_network();
   void write_byte_to_flash(uint8_t data);
   Arduino_ESP32_OTA::Error update();
@@ -88,11 +87,10 @@ public:
 
 private:
 
-  Client * _client;
+  WiFiClient * _client;
   OtaHeader _ota_header;
   size_t _ota_size;
   uint32_t _crc32;
-  const char * _ca_cert;
 };
 
 #endif /* ARDUINO_ESP32_OTA_H_ */
